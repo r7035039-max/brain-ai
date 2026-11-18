@@ -1,75 +1,96 @@
-# Brain Mini — локальный desktop-чат
+[README_Brain_AI(2).md](https://github.com/user-attachments/files/35050753/README_Brain_AI.2.md)
+# Brain Mini — Local AI Desktop Chat
 
-Первая рабочая основа brain_ai_29999elo по idea.txt и goals.txt. Интерфейс в стиле ChatGPT, собственное оформление Brain. Приложение подключается к твоему llama-server. Веса модели в архив не входят.
+Brain Mini is the first working foundation of **Brain AI**, a local desktop chat application based on the project's original `idea.txt` and `goals.txt`. It features a ChatGPT-inspired interface with Brain's own visual identity and connects to an existing `llama-server` instance. **Model weights are not included.**
 
-## Запуск на Windows / в PyCharm
+## Getting Started (Windows / PyCharm)
 
-1. Распакуй архив в отдельную папку. Не заменяй старый проект.
-2. Используй Python 3.12 или 3.13 для совместимости desktop-зависимостей. Backend проверен на Python 3.12. Python 3.14 и desktop-окно Windows в этой среде не проверялись.
-3. В терминале PyCharm выполни `python -m pip install -r requirements.txt` (или открой INSTALL.bat).
-4. Запусти свою Qwen через llama-server, как раньше, на `127.0.0.1:8080`. Приложение само не загружает и не запускает модель.
-5. Запусти **main.py** в PyCharm или START.bat. Откроется отдельное окно — открывать браузер не требуется.
-6. Внизу слева появится «Модель подключена». В настройках укажи точное имя модели из `http://127.0.0.1:8080/v1/models`, если оно отличается от Qwen3-4B.
+1. Extract the project into a separate directory. Do not overwrite an older installation.
+2. Use **Python 3.12 or 3.13** for compatibility with desktop dependencies. The backend was tested with Python 3.12; Python 3.14 and the native Windows desktop window have not been verified in the original test environment.
+3. In the PyCharm terminal, run `python -m pip install -r requirements.txt`, or use `INSTALL.bat`.
+4. Start your Qwen model with `llama-server` at `127.0.0.1:8080`. The application does **not** download or start the model automatically.
+5. Run `main.py` in PyCharm or launch `START.bat`. The app opens in a standalone window; a browser is not required.
+6. Look for the **Model connected** status in the bottom-left corner. If your model name differs from `Qwen3-4B`, set its exact name in Settings using the value returned by `http://127.0.0.1:8080/v1/models`.
 
-Windows-окно использует pywebview и Microsoft Edge WebView2 Runtime. Если движок отсутствует, установи WebView2 Runtime с сайта Microsoft. При проблемах с desktop-зависимостями есть явный запасной запуск: `python main.py --browser`.
+The Windows desktop window uses **pywebview** and **Microsoft Edge WebView2 Runtime**. If WebView2 is missing, install the runtime from Microsoft. If desktop dependencies cause problems, use the explicit browser fallback:
 
-## Что работает
-
-- Тёмная и светлая темы, зелёный акцент и выбор своего цвета.
-- Потоковый ответ, остановка, продолжение, выделение и копирование текста.
-- Чаты, поиск по названиям, переименование, закрепление, удаление и экспорт в Markdown.
-- Проекты с общими инструкциями («нулевой промпт») и файлами для всех чатов.
-- Текстовые вложения TXT, MD, JSON, Python, HTML и другие исходники до 2 МБ. Можно удалить файл из контекста. JSON здесь используется как текст, не как база с отдельными записями.
-- Блоки кода, скачивание каждого блока и изолированный HTML-предпросмотр с работающим JavaScript.
-- Архив memory.db: FTS5-поиск только для чтения по словам текущего запроса. Путь задаётся в настройках. Нужна таблица messages_fts(text), как в твоём memory.py.
-- Подтверждаемая последовательная команда: менеджер → программист → рецензент → исправление. План и рецензия видны в раскрываемых этапах и сохраняются в истории.
-- Проверка синтаксиса Python через AST. Код не исполняется на компьютере автоматически.
-- Понятные ошибки соединения, пустого ответа и превышения контекста.
-
-## 16 ГБ RAM и агенты
-
-Все роли вызывают **одну** модель по очереди. Приложение не держит четыре модели и не загружает transformers/torch. Это четыре запроса с разными инструкциями, а не четыре отдельно обученные нейросети. Рецензия не гарантирует исправления всех ошибок.
-
-Начальные настройки: окно контекста 4096, максимум ответа 1400 токенов. Для генерации игр и команды агентов обычно потребуется больше контекста: выстави, например, 8192 на сервере и в приложении. Настройка приложения сама не меняет память/контекст llama-server. Объём RAM зависит от модели, квантования, KV-кэша и других процессов; лимит 16 ГБ не замерен и не гарантируется.
-
-Приложение оценивает токены консервативно по UTF-8, а не точным токенизатором. Старые сообщения, не поместившиеся в запрос, остаются в базе. Автоматического LLM-сжатия истории пока нет. Файлы выбираются небольшими фрагментами по пересечению слов; это базовый поиск, не векторная база. Для анализа большого файла разбивай задачу.
-
-Для агентной команды код передаётся рецензенту, затем вместе с рецензией — программисту. Если полный материал не помещается в окно контекста, приложение явно сообщит об ошибке и сохранит уже полученный код. Увеличь контекст на сервере и в настройках либо уменьши задачу.
-
-## Попробовать
-
-В обычном чате:
-
-> Создай один автономный HTML-файл: простая игра с машинкой, препятствиями, счётом и рестартом. Без внешних библиотек. Управление стрелками. Верни полный файл в блоке html.
-
-В режиме «Команда агентов» подтвердить запуск четырёх этапов. Начинай с маленьких прототипов. Для настоящего 3D через Three.js потребуются библиотека/сеть и отдельный запуск скачанного проекта. Качество реализации зависит от подключённой модели.
-
-Предпросмотр блокирует сетевые запросы и доступ к родительскому приложению. HTML с CDN-библиотеками внутри него не заработает. Скачай его и запускай отдельно после просмотра кода. Произвольный HTML может зависнуть из-за собственного бесконечного цикла — тогда закрой окно приложения. Python-игры скачиваются и запускаются отдельно после проверки и установки их зависимостей.
-
-## Перенести старые чаты
-
-Закрой новое приложение. В терминале из этой папки:
-
-```bat
-python import_legacy.py "C:\путь\к\старому\desktop_chats.db"
+```powershell
+python main.py --browser
 ```
 
-Исходный файл открывается только для чтения. Переносятся проекты, инструкции, чаты и сообщения. Повторный импорт из того же пути не дублирует сообщения. Старые knowledge_records, детали размышлений и настройки не переносятся: прикрепи исходные файлы заново. memory.db не импортируется — укажи её путь в настройках.
+> **Dependency note:** The setup instructions reference `requirements.txt`. Ensure that this file is included in your distribution; the repository's current ignore rules may exclude `.txt` files.
 
-Новые данные — `data/brain.db`. Для резервной копии закрой приложение и скопируй папку data. Для переноса на другой компьютер нужны код, папка data и отдельно модель.
+## Features
 
-## Чего ещё нет
+- Dark and light themes, a green accent, and customizable accent colors.
+- Streaming responses, stop and continue controls, text selection, and copying.
+- Chat history with title search, renaming, pinning, deletion, and Markdown export.
+- Projects with shared instructions (a “zero prompt”) and files accessible to all chats within a project.
+- Text attachments, including TXT, Markdown, JSON, Python, HTML, and other source files up to **2 MB**. Files can be removed from context. JSON is treated as text, not as a structured record database.
+- Code blocks with individual downloads and an isolated HTML preview that supports JavaScript.
+- Read-only **FTS5 keyword search** over an existing `memory.db` archive, configured through Settings. The archive must provide a `messages_fts(text)` table, as used by `memory.py`.
+- A confirmation-based sequential agent workflow: **manager → developer → reviewer → revision**. Plans and reviews appear in expandable stages and are saved in chat history.
+- Python syntax validation using AST. Generated Python code is **not automatically executed** on your computer.
+- Clear error messages for connection failures, empty responses, and context-window limits.
 
-Это мини-приложение, а не полная копия GPT/Claude и не новая обученная модель. Пока нет веб-поиска, зрения, автоматических кликов тестировщика, безопасной среды запуска произвольного кода, генерации изображений, PDF/OCR, Telegram-бота, автоматического управления настройками через инструменты, обучения LoRA, переключения/выгрузки разных моделей и интерактивных опросов, создаваемых моделью. HTML-предпросмотр уже позволяет вручную пользоваться сгенерированными кнопками и мини-приложениями.
+## Agents and 16 GB RAM
 
-LoRA подключается на стороне llama-server только к совместимой базовой модели; адаптер для 0.6B нельзя просто подключить к 4B.
+All agent roles call **one model sequentially**. The app does not keep four models loaded and does not load `transformers` or `torch` for these roles. Each role is a separate request with different instructions, rather than a separately trained neural network. A review does not guarantee that every bug will be fixed.
 
-## Проверки поставки
+The initial settings use a **4,096-token context window** and a **1,400-token maximum response**. Game generation and multi-agent tasks generally benefit from a larger context, such as 8,192 tokens, configured both in `llama-server` and in the app. Changing the app setting does not change the server's actual context capacity.
 
-Пройдены 7 автоматических тестов: потоковая генерация и сохранение, последовательные роли и следующий запрос, общий контекст проектов, остановка и запрет параллельных запросов, переполнение контекста, недоступный API, защита локального HTTP API. Использован подставной SSE-сервер, не настоящая Qwen. Python компилируется; синтаксис JavaScript проверен Node.
+RAM usage depends on the model, quantization, KV cache, and other running processes. Operation within 16 GB has not been benchmarked or guaranteed.
 
-Сценарий UI-тестов приложен, но здесь его выполнить не удалось: Chromium блокируется средой. Визуальный результат, Windows/WebView2, скорость и качество реальной Qwen требуют проверки на твоём компьютере.
+Token usage is estimated conservatively from UTF-8 text rather than calculated with the model's exact tokenizer. Older messages that do not fit into a request remain in the database. Automatic LLM-based conversation summarization is not yet implemented. File excerpts are selected through basic keyword overlap, not vector search. For large files, split the task into smaller requests.
 
-Разработчику: `python -m unittest discover -s tests -v`. Для UI-теста отдельно установи playwright и Chromium, при необходимости измени путь executable_path в tests/ui_check.py. Эти зависимости для работы приложения не нужны.
+In the agent workflow, generated code is passed to the reviewer and then returned to the developer along with the review. If the combined content exceeds the context window, the app reports an error and retains the code already produced. Increase the server and app context limits or reduce the task size.
 
-Техническая справка pywebview: https://pywebview.flowrl.com/api/
+## Try It
+
+In a regular chat, try this prompt:
+
+> Create a single, self-contained HTML file containing a simple driving game with obstacles, a score counter, and a restart button. Use arrow-key controls and no external libraries. Return the complete file in an HTML code block.
+
+In **Agent Team** mode, confirm the four-stage workflow. Start with small prototypes. A full 3D project using Three.js requires the library or network access and must be run separately after downloading. Output quality depends on the connected model.
+
+The built-in HTML preview blocks network requests and access to the parent application. HTML that depends on CDN-hosted libraries will not work inside the preview. Download and review such code before running it separately. Arbitrary HTML can also freeze itself through an infinite loop; if that happens, close the application window. Python games must be downloaded, reviewed, and run separately after installing their dependencies.
+
+## Import Existing Chats
+
+Close the new application. From a terminal in the project directory, run:
+
+```powershell
+python import_legacy.py "C:\path\to\old\desktop_chats.db"
+```
+
+The source database is opened **read-only**. Projects, instructions, chats, and messages are imported. Repeating an import from the same path does not duplicate messages.
+
+Legacy `knowledge_records`, reasoning details, and settings are not migrated; attach the original files again if needed. `memory.db` is not imported—configure its path in Settings instead.
+
+New application data is stored in `data/brain.db`. To make a backup, close the app and copy the `data` directory. Moving to another computer requires the source code, the data directory, and a separately installed model.
+
+## Current Limitations
+
+Brain Mini is a lightweight application, not a full GPT/Claude replacement or a newly trained foundation model. The version described here does not yet provide integrated web search, vision, automatic tester clicks, a secure sandbox for arbitrary code execution, image generation, PDF/OCR support, a Telegram bot, tool-driven settings management, LoRA training, dynamic loading and unloading of different models, or model-generated interactive questionnaires.
+
+The HTML preview does support manually interacting with generated buttons and mini-apps.
+
+LoRA adapters are loaded through `llama-server` and must be compatible with the base model. An adapter trained for a **0.6B** model cannot simply be attached to a **4B** model.
+
+## Testing and Validation
+
+Seven automated tests passed in the original test environment, covering streaming and persistence, sequential agent roles and follow-up requests, shared project context, stopping and preventing concurrent requests, context overflow, API unavailability, and local HTTP API protection.
+
+These tests used a **mock SSE server**, not a real Qwen model. Python compilation passed, and JavaScript syntax was checked with Node.js.
+
+A UI test script is included, but it could not be run in the original environment because Chromium was blocked. The actual UI, Windows/WebView2 behavior, performance, and output quality with Qwen still require testing on your own machine.
+
+Run backend tests with:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+For UI tests, install Playwright and Chromium separately. If necessary, adjust `executable_path` in `tests/ui_check.py`. These test dependencies are not required to use the application.
+
+**pywebview API reference:** https://pywebview.flowrl.com/api/
